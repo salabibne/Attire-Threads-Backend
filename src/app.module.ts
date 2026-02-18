@@ -5,6 +5,8 @@ import { AppService } from '../src/app.service.js';
 import { PrismaModule } from '../src/prisma/prisma.module.js';
 import { UsersModule } from '../src/users/users.module.js';
 import { AuthModule } from '../src/auth/auth.module.js';
+import { CategoryModule } from '../src/category/category.module.js';
+import { SubcategoryModule } from '../src/subcategory/subcategory.module.js';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { AuthModule } from '../src/auth/auth.module.js';
     PrismaModule,
     UsersModule,
     AuthModule,
+    CategoryModule,
+    SubcategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

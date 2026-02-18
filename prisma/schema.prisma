@@ -1,8 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This File Contains
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// USER MODEL => This Model contains User Releted Information
+
+// CATEGORY MODEL => This Model contains Category Releted Information
+// SUBCATEGORY MODEL => This Model contains SubCategory Releted Information
+// PRODUCT MODEL => This Model contains Product Releted Information
+
+
 
 generator client {
   provider = "prisma-client"
@@ -48,5 +52,60 @@ model RefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
+}
+
+// Products Releted models . For here we add a model category, subcategory and product.
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  description String?
+  subcategories SubCategory[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+}
+
+model SubCategory {
+  id String @id @default(uuid())
+  name String
+  description String?
+  categoryId String
+  category Category @relation(fields: [categoryId], references: [id])
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+}
+
+model Product {
+  id            String           @id @default(uuid())
+  name          String
+  description   String
+  brand         String
+  subCategoryId String
+  subCategory   SubCategory      @relation(fields: [subCategoryId], references: [id])
+  variants      ProductVariant[] // Product owns the variants
+  skus          SKU[]            // For products with NO variants
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt 
+}
+
+model ProductVariant {
+  id            String       @id @default(uuid())
+  name         String
+  productId     String
+  product       Product      @relation(fields: [productId], references: [id])
+  size          String?
+  color         String?
+  skus          SKU[]
+}
+
+model SKU {
+  id               String          @id @default(uuid())
+  skuCode          String          @unique
+  price            Float
+  stock            Int
+  productId        String
+  product          Product         @relation(fields: [productId], references: [id])
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
 }
 
