@@ -96,6 +96,7 @@ model ProductVariant {
   size          String?
   color         String?
   skus          SKU[]
+  images        productImageAttribute[]
 }
 
 model SKU {
@@ -109,3 +110,11 @@ model SKU {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
 }
 
+model productImageAttribute {
+  id String @id @default(uuid())
+  imageBannar String
+  imageGallery String[]
+  productVariantId  String
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id])
+
+}
