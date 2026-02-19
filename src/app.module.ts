@@ -7,6 +7,7 @@ import { UsersModule } from '../src/users/users.module.js';
 import { AuthModule } from '../src/auth/auth.module.js';
 import { CategoryModule } from '../src/category/category.module.js';
 import { SubcategoryModule } from '../src/subcategory/subcategory.module.js';
+import { ProductModule } from './product/product.module.js';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SubcategoryModule } from '../src/subcategory/subcategory.module.js';
     AuthModule,
     CategoryModule,
     SubcategoryModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
