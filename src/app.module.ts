@@ -11,6 +11,8 @@ import { ProductModule } from './product/product.module.js';
 import { ProductVariantModule } from './product-variant/product-variant.module.js';
 import { SkuModule } from './sku/sku.module.js';
 import { ProductAttributeModule } from './product-attribute/product-attribute.module.js';
+import { CartModule } from './cart/cart.module.js';
+import { OrderModule } from './order/order.module.js';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { ProductAttributeModule } from './product-attribute/product-attribute.mo
     ProductVariantModule,
     SkuModule,
     ProductAttributeModule,
+    CartModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

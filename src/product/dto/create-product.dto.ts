@@ -16,4 +16,22 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   subCategoryId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  defaultImageBanner: string;
+
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  defaultImagesGallery: string[];
+
+  @IsNotEmpty()
+  defaultPrice: number;
+
+  @IsNotEmpty()
+  minPrice: number;
+  @IsNotEmpty()
+  maxPrice: number;
+
+  
 }

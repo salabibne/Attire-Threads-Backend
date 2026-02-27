@@ -6,7 +6,7 @@
 // SUBCATEGORY MODEL => This Model contains SubCategory Releted Information
 // PRODUCT MODEL => This Model contains Product Releted Information
 
-
+// TODO : Male / Female base Chat options[Whatsapp]
 
 generator client {
   provider = "prisma-client"
@@ -18,6 +18,14 @@ datasource db {
 }
 
 // All Enums are here 
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
 enum Role {
   USER
   ADMIN
@@ -40,6 +48,8 @@ model User {
   secondaryPhone String?
   address String
   tokens RefreshToken[]
+  cart   Cart?
+  orders Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
 }
@@ -80,6 +90,11 @@ model Product {
   name          String
   description   String
   brand         String
+  defaultPrice   Float?
+  defaultImageBanner  String?
+  defaultImagesGallery  String[]
+  minPrice       Float?
+  maxPrice       Float?
   subCategoryId String
   subCategory   SubCategory      @relation(fields: [subCategoryId], references: [id])
   variants      ProductVariant[] // Product owns the variants
@@ -108,6 +123,53 @@ model SKU {
   product          Product         @relation(fields: [productId], references: [id])
   productVariantId String
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  skuId     String
+  sku       SKU      @relation(fields: [skuId], references: [id])
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  totalAmount Float
+  status      OrderStatus @default(PENDING)
+  address     String
+  phone       String
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  skuId     String
+  sku       SKU      @relation(fields: [skuId], references: [id])
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model productImageAttribute {

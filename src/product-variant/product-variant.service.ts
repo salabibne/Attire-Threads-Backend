@@ -21,7 +21,7 @@ export class ProductVariantService {
 
       const variant = await this.prisma.productVariant.create({
         data: createProductVariantDto,
-        include: { product: true, skus: true },
+        include: { product: true, skus: true, images: true },
       });
 
       return {

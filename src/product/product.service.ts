@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, InternalServerErrorException, HttpStatus
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { paginate10 } from '../common/pagination/pagination10.js';
 
 @Injectable()
 export class ProductService {
@@ -37,10 +38,15 @@ export class ProductService {
   }
 
   // ✅ Find All
-  async findAll() {
+  async findAll(page: number, limit: number ) {
+    const { take, skip } = paginate10(page, limit);
     try {
+      // Count total products for pagination metadata
+      const total = await this.prisma.product.count();
+      
       const products = await this.prisma.product.findMany({
-        include: { subCategory: true, variants: true, skus: true },
+        skip,
+        take,
         orderBy: { createdAt: 'desc' },
       });
 
@@ -48,6 +54,12 @@ export class ProductService {
         statusCode: HttpStatus.OK,
         message: 'Products fetched successfully',
         data: products,
+        meta:{
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
       };
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -60,7 +72,7 @@ export class ProductService {
     try {
       const product = await this.prisma.product.findUnique({
         where: { id },
-        include: { subCategory: true, variants: true, skus: true },
+        include: { subCategory: true, variants: {include:{images:true}}, skus: true },
       });
 
       if (!product) {
