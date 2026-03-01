@@ -1,13 +1,3 @@
-// This File Contains
-
-// USER MODEL => This Model contains User Releted Information
-
-// CATEGORY MODEL => This Model contains Category Releted Information
-// SUBCATEGORY MODEL => This Model contains SubCategory Releted Information
-// PRODUCT MODEL => This Model contains Product Releted Information
-
-// TODO : Male / Female base Chat options[Whatsapp]
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -17,7 +7,158 @@ datasource db {
   provider = "postgresql"
 }
 
-// All Enums are here 
+model User {
+  id             String         @id @default(uuid())
+  name           String
+  email          String         @unique
+  password       String
+  role           Role           @default(USER)
+  phone          String
+  secondaryPhone String?
+  address        String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  cart           Cart?
+  orders         Order[]
+  tokens         RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  subcategories SubCategory[]
+}
+
+model SubCategory {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  categoryId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+  category    Category  @relation(fields: [categoryId], references: [id])
+}
+
+model Product {
+  id                   String           @id @default(uuid())
+  name                 String
+  description          String
+  brand                String
+  subCategoryId        String
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  defaultImageBanner   String?
+  defaultImagesGallery String[]
+  defaultPrice         Float?
+  maxPrice             Float?
+  minPrice             Float?
+  subCategory          SubCategory      @relation(fields: [subCategoryId], references: [id])
+  variants             ProductVariant[]
+  skus                 SKU[]
+
+}
+
+model ProductVariant {
+  id        String                  @id @default(uuid())
+  name      String
+  size      String?
+  color     String?
+  productId String
+  product   Product                 @relation(fields: [productId], references: [id])
+  skus      SKU[]
+  images    productImageAttribute[]
+}
+
+model SKU {
+  id               String         @id @default(uuid())
+  price            Float
+  stock            Int
+  productId        String
+  productVariantId String
+  skuCode          String         @unique
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  product          Product        @relation(fields: [productId], references: [id])
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  skuId     String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  sku       SKU      @relation(fields: [skuId], references: [id])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  totalAmount Float
+  status      OrderStatus @default(PENDING)
+  address     String
+  phone       String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  skuId     String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id])
+  sku       SKU      @relation(fields: [skuId], references: [id])
+}
+
+model productImageAttribute {
+  id               String         @id @default(uuid())
+  imageBannar      String
+  imageGallery     String[]
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+}
+
+model PromoProducts {
+  id        String    @id @default(uuid())
+  name      String
+  status    Boolean   @default(true)
+  limit     Int       @default(8)
+  products_id  String[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 enum OrderStatus {
   PENDING
   PROCESSING
@@ -35,148 +176,4 @@ enum Role {
   SUPPORT_MANAGER
   SUPPORT_REPRESENTATIVE
   SALES_REPRESENTATIVE
-
-}
-
-model User {
-  id String @id @default(uuid())
-  name String
-  email String @unique
-  password String
-  role Role @default(USER)
-  phone String
-  secondaryPhone String?
-  address String
-  tokens RefreshToken[]
-  cart   Cart?
-  orders Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
-}
-
-model RefreshToken {
-  id String @id @default(uuid())
-  token String
-  userId String
-  user User @relation(fields: [userId], references: [id])
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
-}
-
-// Products Releted models . For here we add a model category, subcategory and product.
-model Category {
-  id String @id @default(uuid())
-  name String @unique
-  description String?
-  subcategories SubCategory[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
-}
-
-model SubCategory {
-  id String @id @default(uuid())
-  name String @unique
-  description String?
-  categoryId String
-  category Category @relation(fields: [categoryId], references: [id])
-  products Product[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
-}
-
-model Product {
-  id            String           @id @default(uuid())
-  name          String
-  description   String
-  brand         String
-  defaultPrice   Float?
-  defaultImageBanner  String?
-  defaultImagesGallery  String[]
-  minPrice       Float?
-  maxPrice       Float?
-  subCategoryId String
-  subCategory   SubCategory      @relation(fields: [subCategoryId], references: [id])
-  variants      ProductVariant[] // Product owns the variants
-  skus          SKU[]            // For products with NO variants
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt 
-}
-
-model ProductVariant {
-  id            String       @id @default(uuid())
-  name         String
-  productId     String
-  product       Product      @relation(fields: [productId], references: [id])
-  size          String?
-  color         String?
-  skus          SKU[]
-  images        productImageAttribute[]
-}
-
-model SKU {
-  id               String          @id @default(uuid())
-  skuCode          String          @unique
-  price            Float
-  stock            Int
-  productId        String
-  product          Product         @relation(fields: [productId], references: [id])
-  productVariantId String
-  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
-  cartItems        CartItem[]
-  orderItems       OrderItem[]
-}
-
-model Cart {
-  id        String     @id @default(uuid())
-  userId    String     @unique
-  user      User       @relation(fields: [userId], references: [id])
-  items     CartItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-}
-
-model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id])
-  skuId     String
-  sku       SKU      @relation(fields: [skuId], references: [id])
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Order {
-  id          String      @id @default(uuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
-  totalAmount Float
-  status      OrderStatus @default(PENDING)
-  address     String
-  phone       String
-  items       OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-}
-
-model OrderItem {
-  id        String   @id @default(uuid())
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id])
-  skuId     String
-  sku       SKU      @relation(fields: [skuId], references: [id])
-  quantity  Int
-  price     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model productImageAttribute {
-  id String @id @default(uuid())
-  imageBannar String
-  imageGallery String[]
-  productVariantId  String
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id])
-
 }

@@ -13,6 +13,7 @@ import { SkuModule } from './sku/sku.module.js';
 import { ProductAttributeModule } from './product-attribute/product-attribute.module.js';
 import { CartModule } from './cart/cart.module.js';
 import { OrderModule } from './order/order.module.js';
+import { PromoProductsModule } from './promo-products/promo-products.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrderModule } from './order/order.module.js';
     ProductAttributeModule,
     CartModule,
     OrderModule,
+    PromoProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
