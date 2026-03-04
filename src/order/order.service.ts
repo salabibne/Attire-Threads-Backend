@@ -24,20 +24,34 @@ export class OrderService {
         throw new BadRequestException('Cart is empty');
       }
 
-      // 2. Validate stock for all items
-      for (const item of cart.items) {
-        if (item.sku.stock < item.quantity) {
-          throw new BadRequestException(`Insufficient stock for SKU: ${item.sku.skuCode}`);
-        }
-      }
-
-      // 3. Calculate total amount
+      // 2. Calculate total amount
       const totalAmount = cart.items.reduce((total, item) => {
         return total + item.sku.price * item.quantity;
       }, 0);
 
-      // 4. Create Order and OrderItems in a transaction
+      // 3. Create Order and OrderItems in a transaction
       const result = await this.prisma.$transaction(async (tx) => {
+        // Reserve/decrement stock atomically per SKU
+        for (const item of cart.items) {
+          const updateResult = await tx.sKU.updateMany({
+            where: {
+              id: item.skuId,
+              stock: {
+                gte: item.quantity,
+              },
+            },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+
+          if (updateResult.count === 0) {
+            throw new BadRequestException(`Insufficient stock for SKU: ${item.sku.skuCode}`);
+          }
+        }
+
         // Create the order
         const order = await tx.order.create({
           data: {
@@ -58,18 +72,6 @@ export class OrderService {
             items: true,
           },
         });
-
-        // Update stock for each SKU
-        for (const item of cart.items) {
-          await tx.sKU.update({
-            where: { id: item.skuId },
-            data: {
-              stock: {
-                decrement: item.quantity,
-              },
-            },
-          });
-        }
 
         // Clear the cart items
         await tx.cartItem.deleteMany({

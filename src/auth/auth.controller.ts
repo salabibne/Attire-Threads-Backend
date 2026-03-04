@@ -44,6 +44,6 @@ export class AuthController {
     // You would extract userId from the token or DB
     // For example, verify token and get userId
     const newTokens = await this.authService.refreshToken(token); // fill userId as needed
-    return { accessToken: newTokens.accessToken };
+    return { refreshToken: newTokens.refreshToken };
   }
 }
