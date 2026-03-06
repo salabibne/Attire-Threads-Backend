@@ -25,7 +25,8 @@ export class AuthService {
     if (exists) throw new ConflictException('Email already exists');
 
     const user = await this.usersService.create(registerDto);
-    return user;
+    console.log('Registered user:', user);
+    return {email:user?.data?.email, name: user?.data?.name, role: user?.data?.role};
   }
 
   // 2. LOGIN - sets refresh token as HTTP-only cookie
@@ -47,7 +48,7 @@ export class AuthService {
       maxAge: 60 * 24 * 60 * 60 * 1000, // 60 days
     });
 
-    return { accessToken: tokens.accessToken };
+    return { accessToken: tokens.accessToken, user: { name:user.name, email: user.email, role: user.role } };
   }
 
   // 3. TOKEN GENERATION & HASHING
@@ -114,8 +115,11 @@ export class AuthService {
   }
 
   // 5. LOGOUT
-  async logout(userId: string, res: Response) {
-    await this.prisma.refreshToken.deleteMany({ where: { userId } });
+  async logout(usermail: string, res: Response) {
+    const user = await this.usersService.findByEmail(usermail);
+    if (!user) throw new UnauthorizedException('User not found');
+
+    await this.prisma.refreshToken.deleteMany({ where: { userId: user.id } });
 
     res.clearCookie('refreshToken', {
       httpOnly: true,

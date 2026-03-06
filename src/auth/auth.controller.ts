@@ -25,10 +25,10 @@ export class AuthController {
   // 3. LOGOUT - clear refresh token cookie
   @Post('logout')
   async logout(
-    @Body() body: { userId: string },
+    @Body() body: { usermail: string },
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logout(body.userId, res);
+    await this.authService.logout(body.usermail, res);
     return { message: 'Logged out successfully' };
   }
 
